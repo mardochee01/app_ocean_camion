@@ -1,0 +1,74 @@
+# ==============================
+# 🚫 Fichier .gitignore - Streamlit + Python + Supabase + Windows
+# ==============================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+*.spec
+
+# --- Environnements virtuels ---
+venv/
+env/
+ENV/
+.venv/
+.env/
+.ENV/
+*.env
+*.env.local
+
+# --- Variables sensibles ---
+.env
+.env.*
+*.key
+*.pem
+secrets.json
+supabase_service_key.txt
+
+# --- Streamlit ---
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# --- Jupyter / IPython ---
+.ipynb_checkpoints
+*.ipynb
+
+# --- IDE / éditeurs ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# --- OS / fichiers temporaires ---
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.bak
+*.tmp
+*.log
+
+# --- Cache & autres ---
+.cache/
+*.sqlite3
+__MACOSX/
+*.tar.gz
+*.zip
+*.rar
+
+# --- Tests ---
+.coverage
+htmlcov/
+.tox/
+.nox/
+pytest_cache/
