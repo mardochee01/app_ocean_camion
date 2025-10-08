@@ -6,7 +6,6 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from supabase import create_client
-from dotenv import load_dotenv
 import os
 import json
 #import win32com.client as win32
@@ -20,17 +19,20 @@ from email.mime.multipart import MIMEMultipart
 # =========================
 st.set_page_config(page_title="Suivi Camions", layout="centered")
 
-# Charger les variables d'environnement
-load_dotenv()
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Utiliser st.secrets sur Cloud (au lieu de .env ; ajoutez SUPABASE_URL et SUPABASE_KEY dans Settings > Secrets)
+SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL"))
+SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY"))
 
-# Connexion à Supabase
+# Connexion à Supabase (cachée comme ressource, OK pour connexions persistantes)
 @st.cache_resource
 def init_supabase():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 supabase = init_supabase()
+
+# Flag session pour clé de cache dynamique (force refresh après insert)
+if 'refresh_key' not in st.session_state:
+    st.session_state.refresh_key = datetime.now().isoformat()
 
 # =========================
 # 🎨 STYLE GLOBAL
@@ -112,7 +114,10 @@ if menu == "📝 Saisie des tournées":
             }
             try:
                 supabase.table("tournees").insert(data).execute()
+                st.cache_data.clear()  # Efface TOUS les caches data (force re-fetch sur page 2)
+                st.session_state.refresh_key = datetime.now().isoformat()  # Met à jour la clé pour invalidation future
                 st.success(f"Tournée enregistrée avec succès ({total} camions à {ville})")
+                st.rerun()  # Force re-run global pour refresh immédiat (utile si on reste sur page 1)
             except Exception as e:
                 st.error(f"Erreur d’enregistrement : {e}")
 
@@ -124,9 +129,9 @@ elif menu == "📊 Consultation & envoi":
 
     today = datetime.now().date().isoformat()
     
-    # Cache pour les données
-    @st.cache_data
-    def load_tournees(today):
+    # Cache avec TTL=60s (1 min auto-refresh) ET clé dynamique (refresh_key) pour invalidation après insert
+    @st.cache_data(ttl=60)
+    def load_tournees(today, refresh_key):
         try:
             data = (
                 supabase.table("tournees")
@@ -140,7 +145,7 @@ elif menu == "📊 Consultation & envoi":
             st.error(f"Erreur de chargement des données : {e}")
             return []
 
-    records = load_tournees(today)
+    records = load_tournees(today, st.session_state.refresh_key)  # Inclut refresh_key pour casser le cache après insert
 
     if records:
         df = pd.DataFrame(records)
