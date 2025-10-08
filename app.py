@@ -9,11 +9,8 @@ from supabase import create_client
 from dotenv import load_dotenv
 import os
 import json
-#import win32com.client as win32
-#import pythoncom
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import win32com.client as win32
+import pythoncom
 
 # =========================
 # ⚙️ CONFIGURATION GLOBALE
@@ -182,89 +179,40 @@ elif menu == "📊 Consultation & envoi":
             "Destinataires :", direction_mails, default=[direction_mails[0]]
         )
 
-        #if st.button("✉️ Envoyer ce résumé par mail"):
-         #   try:
-          #      pythoncom.CoInitialize()
-#
- #               html_body = f"""
-  #              <html>
-   #             <body style="font-family:Arial;">
-    #                <h2 style="color:#00796B;">Résumé de la tournée du {selected['ville']} ({selected['heure']})</h2>
-     #               <p><b>Date :</b> {selected['date'].strftime('%d/%m/%Y à %H:%M')}</p>
-      #              <p><b>Total camions :</b> {selected['total']}</p>
-       #             <table border="1" cellspacing="0" cellpadding="5" 
-        #                style="border-collapse:collapse; width:70%;" class="table-style">
-         #               <tr><th>Usine</th><th>Nombre de camions</th></tr>
-          #              {usine_table}
-           #         </table>
-            #        <br>
-             #       <p>Envoyé automatiquement depuis l’application <b>Suivi Camions</b>.</p>
-              #  </body>
-               # </html>
-                #"""
+        if st.button("✉️ Envoyer ce résumé par mail"):
+            try:
+                pythoncom.CoInitialize()
 
-           #     outlook = win32.Dispatch("Outlook.Application")
-            #    mail = outlook.CreateItem(0)
-             #   mail.To = "; ".join(to_emails)
-            #    mail.Subject = f"Tournée {selected['ville']} – {selected['date'].strftime('%d/%m/%Y %H:%M')}"
-             #   mail.HTMLBody = html_body
-              #  mail.Send()  # Envoie le mail directement
+                html_body = f"""
+                <html>
+                <body style="font-family:Arial;">
+                    <h2 style="color:#00796B;">Résumé de la tournée du {selected['ville']} ({selected['heure']})</h2>
+                    <p><b>Date :</b> {selected['date'].strftime('%d/%m/%Y à %H:%M')}</p>
+                    <p><b>Total camions :</b> {selected['total']}</p>
+                    <table border="1" cellspacing="0" cellpadding="5" 
+                        style="border-collapse:collapse; width:70%;" class="table-style">
+                        <tr><th>Usine</th><th>Nombre de camions</th></tr>
+                        {usine_table}
+                    </table>
+                    <br>
+                    <p>Envoyé automatiquement depuis l’application <b>Suivi Camions</b>.</p>
+                </body>
+                </html>
+                """
 
-               # pythoncom.CoUninitialize()
-#
- #               st.success("📧 Mail envoyé avec succès !")
-  ##          except Exception as e:
-    #            st.error(f"Erreur lors de l’envoi : {e}")
-     #           if 'pythoncom' in locals():
-      #              pythoncom.CoUninitialize()
-    #else:
-     #   st.info("Aucune tournée enregistrée aujourd’hui.")
+                outlook = win32.Dispatch("Outlook.Application")
+                mail = outlook.CreateItem(0)
+                mail.To = "; ".join(to_emails)
+                mail.Subject = f"Tournée {selected['ville']} – {selected['date'].strftime('%d/%m/%Y %H:%M')}"
+                mail.HTMLBody = html_body
+                mail.Send()  # Envoie le mail directement
 
-if st.button("✉️ Envoyer ce résumé par mail"):
-    try:
-        # Config SMTP (adapte à ton provider ; ex. Gmail ou Outlook.com)
-        smtp_server = "smtp.gmail.com"  # Ou "smtp-mail.outlook.com" pour Hotmail/Outlook
-        smtp_port = 587
-        sender_email = "ton-email@exemple.com"  # Ton email expéditeur
-        sender_password = st.secrets["EMAIL_PASSWORD"]  # Stocke le mot de passe en secret (voir étape 3)
+                pythoncom.CoUninitialize()
 
-        # Destinataires
-        to_emails_str = ", ".join(to_emails)  # Note : virgule pour SMTP
-
-        # Corps HTML (identique à l'ancien)
-        html_body = f"""
-        <html>
-        <body style="font-family:Arial;">
-            <h2 style="color:#00796B;">Résumé de la tournée du {selected['ville']} ({selected['heure']})</h2>
-            <p><b>Date :</b> {selected['date'].strftime('%d/%m/%Y à %H:%M')}</p>
-            <p><b>Total camions :</b> {selected['total']}</p>
-            <table border="1" cellspacing="0" cellpadding="5" 
-                style="border-collapse:collapse; width:70%;" class="table-style">
-                <tr><th>Usine</th><th>Nombre de camions</th></tr>
-                {usine_table}
-            </table>
-            <br>
-            <p>Envoyé automatiquement depuis l’app <b>Suivi Camions</b>.</p>
-        </body>
-        </html>
-        """
-
-        # Créer le message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"Tournée {selected['ville']} – {selected['date'].strftime('%d/%m/%Y %H:%M')}"
-        msg['From'] = sender_email
-        msg['To'] = to_emails_str
-
-        html_part = MIMEText(html_body, 'html')
-        msg.attach(html_part)
-
-        # Envoi SMTP
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()  # Chiffrement
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, to_emails, msg.as_string())  # Note : liste pour multiples destinataires
-        server.quit()
-
-        st.success("📧 Mail envoyé avec succès !")
-    except Exception as e:
-        st.error(f"Erreur lors de l’envoi : {e}")
+                st.success("📧 Mail envoyé avec succès !")
+            except Exception as e:
+                st.error(f"Erreur lors de l’envoi : {e}")
+                if 'pythoncom' in locals():
+                    pythoncom.CoUninitialize()
+    else:
+        st.info("Aucune tournée enregistrée aujourd’hui.")
