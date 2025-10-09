@@ -69,7 +69,7 @@ st.markdown("""
 # 🧭 MENU LATÉRAL
 # =========================
 menu = st.sidebar.radio("📂 Menu", [
-    "🧾 Enregistrement",
+    # "🧾 Enregistrement",
     "📊 Récapitulatif journalier",
     "📈 Filtres et export"
 ])
@@ -77,11 +77,11 @@ menu = st.sidebar.radio("📂 Menu", [
 # =========================
 # 🔹 PAGE 1 : ENREGISTREMENT
 # =========================
-if menu == "🧾 Enregistrement":
-    st.title("🧾 Enregistrement des camions")
+# if menu == "🧾 Enregistrement":
+#     st.title("🧾 Enregistrement des camions")
 
     # Liste des usines par ville
-    usines_dict = {
+usines_dict = {
     "Abidjan": [
         "AFRICA SOURCING", "AWAZEN", "CAP", "CARGILL", "CEMOI", "CENTRAL.T", 
         "COEX.CI", "ECOOKIM", "OLAM", "S3C", "SACO", "SICOCOA", 
@@ -96,87 +96,88 @@ if menu == "🧾 Enregistrement":
     ]
 }
 
-    # Initialisation du session_state
-    if "tournee_data" not in st.session_state:
-        st.session_state.tournee_data = {}
+    # # Initialisation du session_state
+    # if "tournee_data" not in st.session_state:
+    #     st.session_state.tournee_data = {}
     
-    # Flag pour afficher le message de succès
-    if "save_success" not in st.session_state:
-        st.session_state.save_success = False
+    # # Flag pour afficher le message de succès
+    # if "save_success" not in st.session_state:
+    #     st.session_state.save_success = False
     
-    # Afficher le message de succès si présent
-    if st.session_state.save_success:
-        st.success("🎉 Tournée enregistrée avec succès dans la base de données !")
-        st.balloons()
-        st.session_state.save_success = False
+    # # Afficher le message de succès si présent
+    # if st.session_state.save_success:
+    #     st.success("🎉 Tournée enregistrée avec succès dans la base de données !")
+    #     st.balloons()
+    #     st.session_state.save_success = False
 
-    ville = st.selectbox("📍 Ville :", ["Abidjan", "San Pedro"])
-    usines = usines_dict.get(ville, [])
-    usine_select = st.selectbox("🏭 Choisissez une usine :", usines)
+    # ville = st.selectbox("📍 Ville :", ["Abidjan", "San Pedro"])
+    # usines = usines_dict.get(ville, [])
+    # usine_select = st.selectbox("🏭 Choisissez une usine :", usines)
 
-    # Utilisation d'une clé fixe avec valeur par défaut
-    current_value = st.session_state.tournee_data.get(ville, {}).get(usine_select, 0)
-    nombre = st.number_input(
-        "🚛 Nombre de camions :", 
-        min_value=0, 
-        step=1, 
-        value=current_value,
-        key=f"camions_{ville}_{usine_select}"
-    )
+    # # Utilisation d'une clé fixe avec valeur par défaut
+    # current_value = st.session_state.tournee_data.get(ville, {}).get(usine_select, 0)
+    # nombre = st.number_input(
+    #     "🚛 Nombre de camions :", 
+    #     min_value=0, 
+    #     step=1, 
+    #     value=current_value,
+    #     key=f"camions_{ville}_{usine_select}"
+    # )
 
-    # Enregistrement temporaire
-    col1, col2 = st.columns([1, 1])
+    # # Enregistrement temporaire
+    # col1, col2 = st.columns([1, 1])
     
-    with col1:
-        if st.button("✅ Valider cette usine", key="btn_valider"):
-            if ville not in st.session_state.tournee_data:
-                st.session_state.tournee_data[ville] = {}
-            st.session_state.tournee_data[ville][usine_select] = nombre
-            st.success(f"✅ {usine_select} : {nombre} camions")
+    # with col1:
+    #     if st.button("✅ Valider cette usine", key="btn_valider"):
+    #         if ville not in st.session_state.tournee_data:
+    #             st.session_state.tournee_data[ville] = {}
+    #         st.session_state.tournee_data[ville][usine_select] = nombre
+    #         st.success(f"✅ {usine_select} : {nombre} camions")
     
-    with col2:
-        if st.button("🗑️ Réinitialiser", key="btn_reset"):
-            if ville in st.session_state.tournee_data and usine_select in st.session_state.tournee_data[ville]:
-                del st.session_state.tournee_data[ville][usine_select]
-                st.rerun()
+    # with col2:
+    #     if st.button("🗑️ Réinitialiser", key="btn_reset"):
+    #         if ville in st.session_state.tournee_data and usine_select in st.session_state.tournee_data[ville]:
+    #             del st.session_state.tournee_data[ville][usine_select]
+    #             st.rerun()
 
-    # Récapitulatif temporaire
-    st.markdown("### 📋 Récapitulatif")
-    if ville in st.session_state.tournee_data and st.session_state.tournee_data[ville]:
-        recap = pd.DataFrame(
-            list(st.session_state.tournee_data[ville].items()), 
-            columns=["Usine", "Camions"]
-        )
-        total = recap["Camions"].sum()
-        st.dataframe(recap, width="stretch")
-        st.metric("Total", f"{total} camions")
-    else:
-        st.info("Aucune usine enregistrée pour cette ville.")
+    # # Récapitulatif temporaire
+    # st.markdown("### 📋 Récapitulatif")
+    # if ville in st.session_state.tournee_data and st.session_state.tournee_data[ville]:
+    #     recap = pd.DataFrame(
+    #         list(st.session_state.tournee_data[ville].items()), 
+    #         columns=["Usine", "Camions"]
+    #     )
+    #     total = recap["Camions"].sum()
+    #     st.dataframe(recap, width="stretch")
+    #     st.metric("Total", f"{total} camions")
+    # else:
+    #     st.info("Aucune usine enregistrée pour cette ville.")
 
-    # Enregistrement final vers Supabase
-    st.markdown("---")
-    if st.button("💾 Enregistrer la tournée complète", type="primary", key="btn_save"):
-        if not st.session_state.tournee_data.get(ville):
-            st.warning("⚠️ Aucune usine enregistrée pour cette ville.")
-        else:
-            data = {
-                "date": datetime.now().isoformat(),
-                "ville": ville,
-                "usines": st.session_state.tournee_data[ville],
-                "total": sum(st.session_state.tournee_data[ville].values())
-            }
-            try:
-                supabase.table("tournees").insert(data).execute()
-                st.session_state.save_success = True
-                del st.session_state.tournee_data[ville]
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Erreur lors de l'enregistrement : {e}")
+    # # Enregistrement final vers Supabase
+    # st.markdown("---")
+    # if st.button("💾 Enregistrer la tournée complète", type="primary", key="btn_save"):
+    #     if not st.session_state.tournee_data.get(ville):
+    #         st.warning("⚠️ Aucune usine enregistrée pour cette ville.")
+    #     else:
+    #         data = {
+    #             "date": datetime.now().isoformat(),
+    #             "ville": ville,
+    #             "usines": st.session_state.tournee_data[ville],
+    #             "total": sum(st.session_state.tournee_data[ville].values())
+    #         }
+    #         try:
+    #             supabase.table("tournees").insert(data).execute()
+    #             st.session_state.save_success = True
+    #             del st.session_state.tournee_data[ville]
+    #             st.rerun()
+    #         except Exception as e:
+    #             st.error(f"❌ Erreur lors de l'enregistrement : {e}")
 
 # =========================
 # 🔹 PAGE 2 : RÉCAP JOURNALIER
 # =========================
-elif menu == "📊 Récapitulatif journalier":
+
+if menu == "📊 Récapitulatif journalier": 
     st.title("📊 Récapitulatif journalier")
 
     @st.cache_data(ttl=120)
@@ -212,7 +213,8 @@ elif menu == "📊 Récapitulatif journalier":
     df_long = pd.DataFrame(details)
 
     # Totaux avec volume estimé
-    st.markdown("### 🏙️ Totaux journaliers par ville")
+    today = datetime.now().date()
+    st.markdown(f"### 🏙️ Total du jour : {today.strftime('%d/%m/%Y')}")
     recap_ville = df_long.groupby("ville", as_index=False)["camions"].sum()
     recap_ville["Volume estimé (T)"] = recap_ville["camions"] * 40  # 1 camion = 40 T
     recap_ville["Volume estimé (T)"] = recap_ville["Volume estimé (T)"].apply(lambda x: f"{x:,.0f}".replace(",", " "))
