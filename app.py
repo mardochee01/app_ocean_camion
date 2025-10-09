@@ -82,18 +82,19 @@ if menu == "🧾 Enregistrement":
 
     # Liste des usines par ville
     usines_dict = {
-        "Abidjan": [
-            "CEMOI AFRICA.S", "TRANSIT INT", "CENTRAL.T", "OLAM", "ECOOKIM",
-            "COEX.CI", "SICOCOA", "TOUTON", "SUTEC", "AWAZEN",
-            "ZAMACOM", "CARGILL", "SUV", "S3C", "SUCDEN", "CAP SACO"
-        ],
-        "San Pedro": [
-            "CEMOI AFRICA", "SOUR", "SITAPA", "SACC", "OLAM",
-            "ICP", "SNCI", "CGB", "SACO", "ECOOKIM",
-            "SUCDEN", "CARGILL", "S3C", "CENTRALE IND",
-            "KINEDEN", "CACL", "TOUTON", "AWAHUS", "ZAMACOM", "SUV"
-        ]
-    }
+    "Abidjan": [
+        "AFRICA.S", "AWAZEN", "CAP", "CARGILL", "CEMOI", "CENTRAL.T", 
+        "COEX.CI", "ECOOKIM", "OLAM", "S3C", "SACO", "SICOCOA", 
+        "SUCDEN", "SUTEC", "SUV", "TOUTON", "TRANSCAO", "TRANSIT INT", 
+        "ZAMACOM"
+    ],
+    "San Pedro": [
+        "AWAHUS", "CACL", "CARGILL", "CEMOI AFRICA", "CENTRALE IND", 
+        "CGB", "CITRAC", "ECOOKIM", "ICP", "IPSC", "KINEDEN", "MEDLOG", 
+        "OLAM", "S3C", "SACC", "SACO", "SIMAT 2", "SITAPA", "SNCI", 
+        "SOUR", "SUCDEN", "SUV", "TOUTON", "ZAMACOM"
+    ]
+}
 
     # Initialisation du session_state
     if "tournee_data" not in st.session_state:
