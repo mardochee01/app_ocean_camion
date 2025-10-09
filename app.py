@@ -38,13 +38,11 @@ st.markdown("""
     }
     h1, h2, h3 { text-align: center; }
     
-    /* Conteneurs pour centrage */
     .stButton, .stDownloadButton {
         text-align: center;
         margin: 0 auto;
     }
     
-    /* Boutons standards : largeur auto, centrés */
     .stButton > button {
         display: inline-block !important;
         background-color: #009999 !important;
@@ -55,7 +53,6 @@ st.markdown("""
         width: auto !important;
     }
     
-    /* Boutons download : même style */
     .stDownloadButton > button {
         display: inline-block !important;
         background-color: #009999 !important;
@@ -78,7 +75,7 @@ menu = st.sidebar.radio("📂 Menu", [
 ])
 
 # =========================
-# 🔹 PAGE 1 : ENREGISTREMENT (VERSION CORRIGÉE)
+# 🔹 PAGE 1 : ENREGISTREMENT
 # =========================
 if menu == "🧾 Enregistrement":
     st.title("🧾 Enregistrement des camions")
@@ -101,12 +98,22 @@ if menu == "🧾 Enregistrement":
     # Initialisation du session_state
     if "tournee_data" not in st.session_state:
         st.session_state.tournee_data = {}
+    
+    # Flag pour afficher le message de succès
+    if "save_success" not in st.session_state:
+        st.session_state.save_success = False
+    
+    # Afficher le message de succès si présent
+    if st.session_state.save_success:
+        st.success("🎉 Tournée enregistrée avec succès dans la base de données !")
+        st.balloons()
+        st.session_state.save_success = False
 
     ville = st.selectbox("📍 Ville :", ["Abidjan", "San Pedro"])
     usines = usines_dict.get(ville, [])
     usine_select = st.selectbox("🏭 Choisissez une usine :", usines)
 
-    # ✅ Utilisation d'une clé fixe avec valeur par défaut
+    # Utilisation d'une clé fixe avec valeur par défaut
     current_value = st.session_state.tournee_data.get(ville, {}).get(usine_select, 0)
     nombre = st.number_input(
         "🚛 Nombre de camions :", 
@@ -116,7 +123,7 @@ if menu == "🧾 Enregistrement":
         key=f"camions_{ville}_{usine_select}"
     )
 
-    # ✅ Enregistrement temporaire
+    # Enregistrement temporaire
     col1, col2 = st.columns([1, 1])
     
     with col1:
@@ -132,7 +139,7 @@ if menu == "🧾 Enregistrement":
                 del st.session_state.tournee_data[ville][usine_select]
                 st.rerun()
 
-    # --- Récapitulatif temporaire
+    # Récapitulatif temporaire
     st.markdown("### 📋 Récapitulatif")
     if ville in st.session_state.tournee_data and st.session_state.tournee_data[ville]:
         recap = pd.DataFrame(
@@ -145,7 +152,7 @@ if menu == "🧾 Enregistrement":
     else:
         st.info("Aucune usine enregistrée pour cette ville.")
 
-    # 💾 Enregistrement final vers Supabase
+    # Enregistrement final vers Supabase
     st.markdown("---")
     if st.button("💾 Enregistrer la tournée complète", type="primary", key="btn_save"):
         if not st.session_state.tournee_data.get(ville):
@@ -159,8 +166,7 @@ if menu == "🧾 Enregistrement":
             }
             try:
                 supabase.table("tournees").insert(data).execute()
-                st.success(f"✅ Tournée enregistrée : {data['total']} camions à {ville}")
-                # Nettoyage après sauvegarde
+                st.session_state.save_success = True
                 del st.session_state.tournee_data[ville]
                 st.rerun()
             except Exception as e:
@@ -192,10 +198,10 @@ elif menu == "📊 Récapitulatif journalier":
     df = df[df["jour"] == today]
 
     if df.empty:
-        st.warning("Aucune donnée enregistrée pour aujourd’hui.")
+        st.warning("Aucune donnée enregistrée pour aujourd'hui.")
         st.stop()
 
-    # --- Transformation longue
+    # Transformation longue
     details = []
     for _, row in df.iterrows():
         usines = json.loads(row["usines"]) if isinstance(row["usines"], str) else row["usines"]
@@ -204,12 +210,12 @@ elif menu == "📊 Récapitulatif journalier":
 
     df_long = pd.DataFrame(details)
 
-    # --- Totaux
+    # Totaux
     st.markdown("### 🏙️ Totaux journaliers par ville")
     recap_ville = df_long.groupby("ville", as_index=False)["camions"].sum()
     st.dataframe(recap_ville, use_container_width=True)
 
-    # --- Détails
+    # Détails
     st.markdown("### 🏭 Détails par usine")
     ville_choice = st.selectbox("Choisissez la ville :", sorted(df_long["ville"].unique()))
     st.dataframe(df_long[df_long["ville"] == ville_choice], use_container_width=True)
@@ -265,13 +271,12 @@ elif menu == "📈 Filtres et export":
 
     df_long = pd.DataFrame(details)
 
-    # --- Affichage
+    # Affichage
     if not df_long.empty and "ville" in df_long.columns:
         recap_ville = df_long.groupby("ville", as_index=False)["camions"].sum()
         st.dataframe(recap_ville, use_container_width=True)
     else:
-        st.warning("⚠️ Aucune donnée à afficher. Vérifiez vos filtres ou sélectionnez une ville.")
-
+        st.warning("⚠️ Aucune donnée à afficher. Vérifiez vos filtres.")
 
     st.markdown("### 🏭 Détails par usine")
 
@@ -281,18 +286,17 @@ elif menu == "📈 Filtres et export":
     else:
         st.info("Aucun détail disponible pour les critères choisis.")
 
-    # --- Export complet ---
+    # Export complet
     st.markdown("---")
     st.subheader("📦 Télécharger la base de données complète")
 
     @st.cache_data(ttl=300)
     def load_all_data():
-        """Charge toutes les tournées depuis Supabase sans filtre."""
         try:
             data = supabase.table("tournees").select("*").execute()
             return pd.DataFrame(data.data)
         except Exception as e:
-            st.error(f"Erreur lors du chargement des données complètes : {e}")
+            st.error(f"Erreur lors du chargement : {e}")
             return pd.DataFrame()
 
     df_all = load_all_data()
