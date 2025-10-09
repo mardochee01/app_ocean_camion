@@ -78,7 +78,7 @@ menu = st.sidebar.radio("📂 Menu", [
 ])
 
 # =========================
-# 🔹 PAGE 1 : ENREGISTREMENT
+# 🔹 PAGE 1 : ENREGISTREMENT (VERSION CORRIGÉE)
 # =========================
 if menu == "🧾 Enregistrement":
     st.title("🧾 Enregistrement des camions")
@@ -98,38 +98,58 @@ if menu == "🧾 Enregistrement":
         ]
     }
 
-    ville = st.selectbox("📍 Ville :", ["Abidjan", "San Pedro"])
+    # Initialisation du session_state
     if "tournee_data" not in st.session_state:
         st.session_state.tournee_data = {}
-    if "reset_counter" not in st.session_state:
-        st.session_state.reset_counter = 0  # Compteur pour clé dynamique
 
+    ville = st.selectbox("📍 Ville :", ["Abidjan", "San Pedro"])
     usines = usines_dict.get(ville, [])
     usine_select = st.selectbox("🏭 Choisissez une usine :", usines)
 
-    # Clé dynamique pour forcer reset du number_input
-    input_key = f"nb_camions_{st.session_state.reset_counter}"
+    # ✅ Utilisation d'une clé fixe avec valeur par défaut
+    current_value = st.session_state.tournee_data.get(ville, {}).get(usine_select, 0)
+    nombre = st.number_input(
+        "🚛 Nombre de camions :", 
+        min_value=0, 
+        step=1, 
+        value=current_value,
+        key=f"camions_{ville}_{usine_select}"
+    )
 
-    nombre = st.number_input("🚛 Nombre de camions :", min_value=0, step=1, key=input_key)
-
-    # ✅ Enregistrement temporaire avant sauvegarde
-    if st.button("✅ Valider cette usine"):
-        st.session_state.tournee_data.setdefault(ville, {})[usine_select] = nombre
-        st.success(f"Usine {usine_select} enregistrée ({nombre} camions).")
-        # 🔄 Incrémente le compteur pour recréer le widget (reset à 0)
-        st.session_state.reset_counter += 1
-        # Pas de st.rerun() ! Le reset se fait naturellement au prochain run (interaction utilisateur)
+    # ✅ Enregistrement temporaire
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if st.button("✅ Valider cette usine", key="btn_valider"):
+            if ville not in st.session_state.tournee_data:
+                st.session_state.tournee_data[ville] = {}
+            st.session_state.tournee_data[ville][usine_select] = nombre
+            st.success(f"✅ {usine_select} : {nombre} camions")
+    
+    with col2:
+        if st.button("🗑️ Réinitialiser", key="btn_reset"):
+            if ville in st.session_state.tournee_data and usine_select in st.session_state.tournee_data[ville]:
+                del st.session_state.tournee_data[ville][usine_select]
+                st.rerun()
 
     # --- Récapitulatif temporaire
     st.markdown("### 📋 Récapitulatif")
-    if ville in st.session_state.tournee_data:
-        recap = pd.DataFrame(list(st.session_state.tournee_data[ville].items()), columns=["Usine", "Camions"])
-        st.table(recap)
+    if ville in st.session_state.tournee_data and st.session_state.tournee_data[ville]:
+        recap = pd.DataFrame(
+            list(st.session_state.tournee_data[ville].items()), 
+            columns=["Usine", "Camions"]
+        )
+        total = recap["Camions"].sum()
+        st.dataframe(recap, use_container_width=True)
+        st.metric("Total", f"{total} camions")
+    else:
+        st.info("Aucune usine enregistrée pour cette ville.")
 
     # 💾 Enregistrement final vers Supabase
-    if st.button("💾 Enregistrer la tournée complète"):
+    st.markdown("---")
+    if st.button("💾 Enregistrer la tournée complète", type="primary", key="btn_save"):
         if not st.session_state.tournee_data.get(ville):
-            st.warning("Aucune usine enregistrée.")
+            st.warning("⚠️ Aucune usine enregistrée pour cette ville.")
         else:
             data = {
                 "date": datetime.now().isoformat(),
@@ -139,10 +159,12 @@ if menu == "🧾 Enregistrement":
             }
             try:
                 supabase.table("tournees").insert(data).execute()
-                st.success(f"Tournée enregistrée avec succès ({data['total']} camions à {ville}).")
+                st.success(f"✅ Tournée enregistrée : {data['total']} camions à {ville}")
+                # Nettoyage après sauvegarde
                 del st.session_state.tournee_data[ville]
+                st.rerun()
             except Exception as e:
-                st.error(f"Erreur : {e}")
+                st.error(f"❌ Erreur lors de l'enregistrement : {e}")
 
 # =========================
 # 🔹 PAGE 2 : RÉCAP JOURNALIER
