@@ -83,13 +83,13 @@ if menu == "🧾 Enregistrement":
     # Liste des usines par ville
     usines_dict = {
     "Abidjan": [
-        "AFRICA.S", "AWAZEN", "CAP", "CARGILL", "CEMOI", "CENTRAL.T", 
+        "AFRICA SOURCING", "AWAZEN", "CAP", "CARGILL", "CEMOI", "CENTRAL.T", 
         "COEX.CI", "ECOOKIM", "OLAM", "S3C", "SACO", "SICOCOA", 
         "SUCDEN", "SUTEC", "SUV", "TOUTON", "TRANSCAO", "TRANSIT INT", 
         "ZAMACOM"
     ],
     "San Pedro": [
-        "AWAHUS", "CACL", "CARGILL", "CEMOI AFRICA", "CENTRALE IND", 
+        "AFRICA SOURCING", "AWAHUS", "CACL", "CARGILL", "CEMOI", "CENTRALE IND", 
         "CGB", "CITRAC", "ECOOKIM", "ICP", "IPSC", "KINEDEN", "MEDLOG", 
         "OLAM", "S3C", "SACC", "SACO", "SIMAT 2", "SITAPA", "SNCI", 
         "SOUR", "SUCDEN", "SUV", "TOUTON", "ZAMACOM"
