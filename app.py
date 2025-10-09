@@ -38,31 +38,32 @@ st.markdown("""
     }
     h1, h2, h3 { text-align: center; }
     
-    /* Conteneurs des boutons pour centrage */
+    /* Conteneurs pour centrage */
     .stButton, .stDownloadButton {
         text-align: center;
+        margin: 0 auto;
     }
     
-    /* Style des boutons standards */
+    /* Boutons standards : largeur auto, centrés */
     .stButton > button {
+        display: inline-block !important;
+        background-color: #009999 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 1.2rem !important;
         width: auto !important;
-        display: inline-block;
-        background-color: #009999;
-        color: white;
-        font-weight: bold;
-        border-radius: 8px;
-        padding: 0.6rem 1.2rem; /* Padding ajusté pour largeur auto */
     }
     
-    /* Style des boutons de téléchargement (même look) */
+    /* Boutons download : même style */
     .stDownloadButton > button {
+        display: inline-block !important;
+        background-color: #009999 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 1.2rem !important;
         width: auto !important;
-        display: inline-block;
-        background-color: #009999;
-        color: white;
-        font-weight: bold;
-        border-radius: 8px;
-        padding: 0.6rem 1.2rem; /* Padding ajusté pour largeur auto */
     }
 </style>
 """, unsafe_allow_html=True)
@@ -100,24 +101,24 @@ if menu == "🧾 Enregistrement":
     ville = st.selectbox("📍 Ville :", ["Abidjan", "San Pedro"])
     if "tournee_data" not in st.session_state:
         st.session_state.tournee_data = {}
+    if "reset_counter" not in st.session_state:
+        st.session_state.reset_counter = 0  # Compteur pour clé dynamique
 
     usines = usines_dict.get(ville, [])
     usine_select = st.selectbox("🏭 Choisissez une usine :", usines)
 
-    # 🔄 VÉRIFICATION DU FLAG DE RESET AVANT LE WIDGET
-    if "reset_camions" in st.session_state and st.session_state.reset_camions:
-        st.session_state["nb_camions"] = 0
-        del st.session_state.reset_camions  # Nettoie le flag
+    # Clé dynamique pour forcer reset du number_input
+    input_key = f"nb_camions_{st.session_state.reset_counter}"
 
-    nombre = st.number_input("🚛 Nombre de camions :", min_value=0, step=1, key="nb_camions")
+    nombre = st.number_input("🚛 Nombre de camions :", min_value=0, step=1, key=input_key)
 
     # ✅ Enregistrement temporaire avant sauvegarde
     if st.button("✅ Valider cette usine"):
         st.session_state.tournee_data.setdefault(ville, {})[usine_select] = nombre
         st.success(f"Usine {usine_select} enregistrée ({nombre} camions).")
-        #🚩 Set le flag pour reset au prochain run
-        st.session_state.reset_camions = True
-        st.rerun()  # Force un re-run immédiat pour appliquer le reset
+        # 🔄 Incrémente le compteur pour recréer le widget (reset à 0)
+        st.session_state.reset_counter += 1
+        # Pas de st.rerun() ! Le reset se fait naturellement au prochain run (interaction utilisateur)
 
     # --- Récapitulatif temporaire
     st.markdown("### 📋 Récapitulatif")
