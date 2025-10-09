@@ -148,7 +148,7 @@ if menu == "🧾 Enregistrement":
             columns=["Usine", "Camions"]
         )
         total = recap["Camions"].sum()
-        st.dataframe(recap, use_container_width=True)
+        st.dataframe(recap, width="stretch")
         st.metric("Total", f"{total} camions")
     else:
         st.info("Aucune usine enregistrée pour cette ville.")
@@ -211,15 +211,20 @@ elif menu == "📊 Récapitulatif journalier":
 
     df_long = pd.DataFrame(details)
 
-    # Totaux
+    # Totaux avec volume estimé
     st.markdown("### 🏙️ Totaux journaliers par ville")
     recap_ville = df_long.groupby("ville", as_index=False)["camions"].sum()
-    st.dataframe(recap_ville, use_container_width=True)
+    recap_ville["Volume estimé (T)"] = recap_ville["camions"] * 40  # 1 camion = 40 T
+    recap_ville["Volume estimé (T)"] = recap_ville["Volume estimé (T)"].apply(lambda x: f"{x:,.0f}".replace(",", " "))
+    st.dataframe(recap_ville, width="stretch")
 
     # Détails
     st.markdown("### 🏭 Détails par usine")
     ville_choice = st.selectbox("Choisissez la ville :", sorted(df_long["ville"].unique()))
-    st.dataframe(df_long[df_long["ville"] == ville_choice], use_container_width=True)
+    df_details = df_long[df_long["ville"] == ville_choice].copy()
+    df_details["Volume estimé (T)"] = df_details["camions"] * 40
+    df_details["Volume estimé (T)"] = df_details["Volume estimé (T)"].apply(lambda x: f"{x:,.0f}".replace(",", " "))
+    st.dataframe(df_details, width="stretch")
 
 # =========================
 # 🔹 PAGE 3 : FILTRES + EXPORT
@@ -244,15 +249,25 @@ elif menu == "📈 Filtres et export":
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["jour"] = df["date"].dt.date
 
-    # Filtres
+    # Filtres dynamiques
     villes = ["Toutes"] + sorted(df["ville"].unique())
     ville = st.selectbox("📍 Ville :", villes)
 
-    usines_all = sorted({
-        u for sub in df["usines"].apply(lambda x: json.loads(x) if isinstance(x, str) else x) for u in sub
+# Liste des usines selon la ville choisie
+    if ville == "Toutes":
+        usines_all = sorted({
+            u for sub in df["usines"].apply(lambda x: json.loads(x) if isinstance(x, str) else x) for u in sub
+    })
+    else:
+        df_ville = df[df["ville"] == ville]
+        usines_all = sorted({
+            u for sub in df_ville["usines"].apply(lambda x: json.loads(x) if isinstance(x, str) else x) for u in sub
     })
 
     usines_selection = st.multiselect("🏭 Sélectionnez les usines :", usines_all, default=usines_all)
+  
+
+    # Filtres de dates
     date_debut = st.date_input("📅 Début :", df["jour"].min())
     date_fin = st.date_input("📅 Fin :", df["jour"].max())
 
@@ -275,7 +290,9 @@ elif menu == "📈 Filtres et export":
     # Affichage
     if not df_long.empty and "ville" in df_long.columns:
         recap_ville = df_long.groupby("ville", as_index=False)["camions"].sum()
-        st.dataframe(recap_ville, use_container_width=True)
+        recap_ville["Volume estimé (T)"] = recap_ville["camions"] * 40
+        recap_ville["Volume estimé (T)"] = recap_ville["Volume estimé (T)"].apply(lambda x: f"{x:,.0f}".replace(",", " "))
+        st.dataframe(recap_ville, width="stretch")
     else:
         st.warning("⚠️ Aucune donnée à afficher. Vérifiez vos filtres.")
 
@@ -283,7 +300,9 @@ elif menu == "📈 Filtres et export":
 
     if not df_long.empty and all(col in df_long.columns for col in ["ville", "usine", "camions"]):
         recap_usine = df_long.groupby(["ville", "usine"], as_index=False)["camions"].sum()
-        st.dataframe(recap_usine, use_container_width=True)
+        recap_usine["Volume estimé (T)"] = recap_usine["camions"] * 40
+        recap_usine["Volume estimé (T)"] = recap_usine["Volume estimé (T)"].apply(lambda x: f"{x:,.0f}".replace(",", " "))
+        st.dataframe(recap_usine, width="stretch")
     else:
         st.info("Aucun détail disponible pour les critères choisis.")
 
