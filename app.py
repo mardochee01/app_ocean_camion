@@ -8,9 +8,6 @@ from datetime import datetime, timedelta
 from supabase import create_client
 import os
 import json
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 # =========================
 # ⚙️ CONFIGURATION GLOBALE
@@ -152,7 +149,7 @@ if menu == "🧾 Enregistrement":
 # 🔹 PAGE 2 : CONSULTATION + ENVOI
 # =========================
 if menu == "📊 Consultation":
-    st.title("📊 Consultation – Récapitulatif journalier")
+    st.title("📊 Récapitulatif journalier")
 
     # --- Charger toutes les tournées ---
     @st.cache_data(ttl=120)
